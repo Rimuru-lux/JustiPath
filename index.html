@@ -1071,34 +1071,27 @@ JP.creditHTML = () => '<p class="lede" style="text-align:center;font-size:.8rem"
   } else {
     const u = JP.D.users[email];
     if (!u || u.pass !== await hash(email, pw)) {
-      return fail(t("Email or password is incorrect."));
+JP.A.guest = () => { JP.D.guest = true; JP.save(); S.gate = null; S.err = ""; JP.render(); };
+  JP.A.auth = async f => {
+    const v = n => (f.elements[n] ? f.elements[n].value.trim() : ""), email = v("email").toLowerCase(), pw = f.elements.pw.value;
+    const fail = m => { S.err = m; JP.render(); };
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return fail(t("Enter a valid email address."));
+    if (S.authMode === "register") {
+      const mobile = v("mobile").replace(/[\s-]/g, "");
+      if (v("name").length < 2) return fail(t("Enter your full name."));
+      if (!/^(09|\+639)\d{9}$/.test(mobile)) return fail(t("Enter a Philippine mobile number, like 0917 123 4567."));
+      if (pw.length < 8) return fail(t("Use at least 8 characters for your password."));
+      if (pw !== f.elements.pw2.value) return fail(t("The passwords do not match."));
+      if (JP.D.users[email]) return fail(t("This email already has an account. Log in instead."));
+      JP.D.users[email] = { name: v("name"), mobile, region: v("region"), pass: await hash(email, pw), created: Date.now() };
+    } else {
+      const u = JP.D.users[email];
+      if (!u || u.pass !== await hash(email, pw)) return fail(t("Email or password is incorrect."));
     }
-  }
+    JP.D.session = email; JP.D.guest = false; JP.save(); S.gate = null; S.err = ""; S.stack = []; S.route = { name: "home", params: {} }; JP.render(); JP.toast(t("Logged in"));
+  };
+  JP.A.logout = () => { JP.D.session = null; JP.D.guest = false; JP.save(); S.gate = "auth"; S.authMode = "login"; S.stack = []; S.route = { name: "home", params: {} }; S.sheet = null; JP.render(); };
 
-  JP.D.session = email;
-  JP.D.guest = false;
-  JP.save();
-
-  S.gate = null;
-  S.err = "";
-  S.stack = [];
-  S.route = { name: "home", params: {} };
-  JP.render();
-  JP.toast(t("Logged in"));
-};
-  JP.A.logout = () => {
-  JP.D.session = null;
-  JP.D.guest = false;
-  JP.save();
-
-  S.gate = "auth";
-  S.authMode = "login";
-  S.err = "";
-  S.stack = [];
-  S.route = { name: "home", params: {} };
-  S.sheet = null;
-  JP.render();
-};
   /* ---------- real live chat (Tawk.to) ---------- */
   JP.liveReady = () => !!(JP.CHAT && JP.CHAT.tawkProperty && JP.CHAT.tawkWidget);
   JP.loadTawk = function () {
