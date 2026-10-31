@@ -1026,8 +1026,6 @@ JP.creditHTML = () => '<p class="lede" style="text-align:center;font-size:.8rem"
   JP.A.decline = () => JP.toast(t("You need to agree to the Data Privacy Act notice to use JustiPath."));
   JP.A.consent = () => { if (!S.agree) return; JP.D.consent = { ts: new Date().toISOString(), v: 1 }; JP.save(); S.gate = (JP.D.session || JP.D.guest) ? null : "auth"; JP.render(); };
   JP.A.authMode = el => { S.authMode = el.dataset.v; S.err = ""; JP.render(); };
-  JP.A.guest = () => {
-  JP.D.session = null;
   JP.A.guest = () => { JP.D.guest = true; JP.save(); S.gate = null; S.err = ""; JP.render(); };
   JP.A.auth = async f => {
     const v = n => (f.elements[n] ? f.elements[n].value.trim() : ""), email = v("email").toLowerCase(), pw = f.elements.pw.value;
